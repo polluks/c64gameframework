@@ -5,8 +5,8 @@
 
                 varbase $02
 
-                var loadTempReg                 ;Loader variables
-                var loadBufferPos
+                var loadBufferPos               ;Loader variables. Note: order is important, used for selfmod optimization code
+                var loadTempReg
                 var fileOpen
                 var ntscFlag
                 var loaderMode
@@ -144,8 +144,8 @@ complexSprCount = xHi                           ;Reused during actor render
 complexSprTemp  = yHi
 oldSprLo        = wpnLo
 oldSprHi        = wpnHi
-oldSprHeaderLo  = loadTempReg
-oldSprHeaderHi  = loadBufferPos
+oldSprHeaderLo  = loadBufferPos
+oldSprHeaderHi  = loadTempReg
 cacheAdr        = wpnLo
 sliceMask       = wpnHi
 

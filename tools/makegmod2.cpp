@@ -40,6 +40,9 @@ void insertfile(unsigned char filenum, int startoffset, unsigned char* data, int
         cart[0x1d00+filenum] = (startoffset >> 13); // Bank
         cart[0x1e00+filenum] = filesize & 0xff;
         cart[0x1f00+filenum] = filesize >> 8;
+        // If filesize lowbyte 0, must predecrement highbyte
+        if (!(filesize & 0xff))
+            --cart[0x1f00+filenum];
     }
     memcpy(&cart[startoffset], data, filesize);
     int sectors = (filesize+0xff) >> 8;
@@ -53,7 +56,7 @@ void insertfile(unsigned char filenum, int startoffset, unsigned char* data, int
             // For the bootcode, we can leave holes in the allocation to fill it with data files later
             for (int j = 0; j < 256; ++j)
             {
-                if (cart[startsec*256+j] != 0xff)
+                if (cart[i*256+j] != 0xff)
                 {
                     usedsectors[i] = 1;
                     break;
@@ -66,9 +69,9 @@ void insertfile(unsigned char filenum, int startoffset, unsigned char* data, int
 
 int main(int argc, char **argv)
 {
-    if (argc < 2)
+    if (argc < 4)
     {
-        printf("Usage: makegmod2 <bootcode> <seqfile> <output>\n"
+        printf("Usage: makegmod2 <bootcode> <seqfile> <output> <eeprom>\n"
             "Builds gmod2 bin cartridge from bootcode (8KB) and sequencefile.");
         return 1;
     }
@@ -155,6 +158,18 @@ int main(int argc, char **argv)
     }
     fwrite(cart, maxsize, 1, out);
     fclose(out);
+    
+    unsigned char eeprom[2048];
+    memset(eeprom, 0, sizeof eeprom);
+    out = fopen(argv[4], "wb");
+    if (!out)
+    {
+        printf("Could not open outfile\n");
+        return 1;
+    }
+    fwrite(eeprom, 2048, 1, out);
+    fclose(out);
+
     printf("Cart image written, %d bytes\n", maxsize);
     return 0;
 }
